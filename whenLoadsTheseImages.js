@@ -1,36 +1,42 @@
-const onceWhen=(e,s,c)=>{const x=o=>{e.removeEventListener(s,x);c(o)};e.addEventListener(s,x)};
-//
-const whenLoadsTheseImages=(nodes,check=false)=>{
+const onceWhen=(e,s,c)=>{const x=o=>{e.removeEventListener(s,x);c(o)};e.addEventListener(s,x)},
+safeLength=e=>(e &&('length' in e))?Math.max(e.length|0,0):0,
+whenLoadsTheseImages=(nodes,safe=false)=>{
 	const P=Promise;
-	return new P((resolve,reject)=>{
+	return new P((q,r)=>{
 		const m=nodes;
-		let i=check?(m &&('length' in m)?~~m.length:0):m.length;
+		let i=safe?safeLength(m):m.length;
 		if(i!==0){
-			const good=[],broken=[],b=e=>{const x=(e.naturalHeight!==0?good:broken);x[x.length]=e},a=Array(i);
+			const g=[],b=[],a=Array(i);
 			i=0;
 			for(const e of m){
 				(a[i]=(++i,new P(f=>{
 					if(e.complete){
 						f(e)
 					}else{
-						const g=onceWhen,h=()=>f(e);
-						g(e,'load',h);
-						g(e,'error',h)
+						const a=onceWhen,b=()=>f(e);
+						a(e,'load',b);
+						a(e,'error',b)
 					}
-				}))).then(b)
+				}))).then(e=>{const m=(e.naturalHeight!==0?g:b);m[m.length]=e})
 			};
-			P.all(a).then(all=>{resolve([good,broken,all])});
+			P.all(a).then(m=>{q([g,b,m])})//resolve
 		}else{
-			reject(m)
+			r(m)//reject
 		}
 	})
 };
-
-//=== test: =========================================
-let list=document.body.querySelectorAll('img');
-//list=null;,true
-whenLoadsTheseImages(list).then(resolved=>{
-	console.dir(resolved);
-}).catch(rejected=>{
-	console.error(rejected)
-});
+/*
+//=== test: ========================================
+const prova=(n,list,verify=false)=>{
+	whenLoadsTheseImages(list,verify).then(m=>{//resolved
+		console.log('#%d\ngood:%O\nbroken:%O\nall:%O',n,m[0],m[1],m[2]);
+	}).catch(list=>{
+		console.log('#%d\nbad:%O',n,list)//rejected
+	})
+};
+//
+console.clear();
+prova(1,null,true);
+prova(2,{length:2},true);
+prova(3,document.body.querySelectorAll('img'));
+*/
